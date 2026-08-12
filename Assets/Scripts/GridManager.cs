@@ -12,6 +12,9 @@ public class GridManager : MonoBehaviour
     public int height = 6;
     public GameObject[] tilePrefabs;
 
+    [Header("Görsel Efektler")]
+    public GameObject explosionPrefab;
+
     [Header("Oyun Mantığı")]
     public int maxMoves = 5;
     private int currentMoves = 0;
@@ -76,7 +79,6 @@ public class GridManager : MonoBehaviour
         tileA.GetComponent<Tile>().gridPosition = b;
         tileB.GetComponent<Tile>().gridPosition = a;
 
-        // Işınlanmak yerine yumuşakça kaydırıyoruz
         StartCoroutine(MoveToPosition(tileA, new Vector3(b.x, b.y, 0), 0.15f));
         StartCoroutine(MoveToPosition(tileB, new Vector3(a.x, a.y, 0), 0.15f));
 
@@ -161,10 +163,23 @@ public class GridManager : MonoBehaviour
 
         if (tilesToDestroy.Count > 0)
         {
+            // Patlama Sesi
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlayExplode();
+            }
+
             foreach (GameObject tile in tilesToDestroy)
             {
                 Tile tileScript = tile.GetComponent<Tile>();
                 gridObjects[tileScript.gridPosition.x, tileScript.gridPosition.y] = null;
+                
+                if (explosionPrefab != null)
+                {
+                    GameObject vfx = Instantiate(explosionPrefab, tile.transform.position, Quaternion.identity);
+                    Destroy(vfx, 1f);
+                }
+
                 Destroy(tile);
             }
 
@@ -180,7 +195,6 @@ public class GridManager : MonoBehaviour
 
     private IEnumerator ApplyGravityAndRefill()
     {
-        // 1. Taşları aşağı düşür
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -203,7 +217,6 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // 2. Boş yerlere ekranın çok daha yukarısından (Görünmeyen alandan) yeni taş düşür
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -211,9 +224,6 @@ public class GridManager : MonoBehaviour
                 if (gridObjects[x, y] == null)
                 {
                     int randomIndex = Random.Range(0, tilePrefabs.Length);
-                    
-                    // Yüksekliği (height + 3 + (height - y)) yaparak hem ekrandan uzakta doğmalarını 
-                    // hem de üst üste binerken doğal bir sıra ile düşmelerini sağlıyoruz.
                     float spawnY = height + 3f + (height - y);
                     
                     GameObject newTile = Instantiate(tilePrefabs[randomIndex], new Vector3(x, spawnY, 0), Quaternion.identity, transform);
