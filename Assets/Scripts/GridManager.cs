@@ -65,7 +65,6 @@ public class GridManager : MonoBehaviour
 
     public void SwapTiles(Vector2Int a, Vector2Int b)
     {
-        // Patlama evresindeyse veya hamle hakkı bittiyse yer değiştirmeye izin verme
         if (isBoomPhase || currentMoves >= maxMoves) return;
 
         GameObject tileA = gridObjects[a.x, a.y];
@@ -77,8 +76,9 @@ public class GridManager : MonoBehaviour
         tileA.GetComponent<Tile>().gridPosition = b;
         tileB.GetComponent<Tile>().gridPosition = a;
 
-        tileA.transform.position = new Vector3(b.x, b.y, 0);
-        tileB.transform.position = new Vector3(a.x, a.y, 0);
+        // Işınlanmak yerine yumuşakça kaydırıyoruz
+        StartCoroutine(MoveToPosition(tileA, new Vector3(b.x, b.y, 0), 0.15f));
+        StartCoroutine(MoveToPosition(tileB, new Vector3(a.x, a.y, 0), 0.15f));
 
         currentMoves++;
         UpdateUI();
@@ -87,6 +87,23 @@ public class GridManager : MonoBehaviour
         {
             TriggerBigBoom();
         }
+    }
+
+    private IEnumerator MoveToPosition(GameObject obj, Vector3 targetPos, float duration)
+    {
+        if (obj == null) yield break;
+        Vector3 startPos = obj.transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            if (obj == null) yield break;
+            obj.transform.position = Vector3.Lerp(startPos, targetPos, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (obj != null) obj.transform.position = targetPos;
     }
 
     public void TriggerBigBoom()
@@ -98,7 +115,7 @@ public class GridManager : MonoBehaviour
 
     private IEnumerator CheckAndDestroyMatches()
     {
-        yield return new WaitForSeconds(0.4f);
+        yield return new WaitForSeconds(0.2f);
 
         List<GameObject> tilesToDestroy = new List<GameObject>();
 
@@ -151,7 +168,7 @@ public class GridManager : MonoBehaviour
                 Destroy(tile);
             }
 
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(0.25f);
             StartCoroutine(ApplyGravityAndRefill());
         }
         else
@@ -163,6 +180,7 @@ public class GridManager : MonoBehaviour
 
     private IEnumerator ApplyGravityAndRefill()
     {
+        // 1. Taşları aşağı düşür
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -176,7 +194,7 @@ public class GridManager : MonoBehaviour
                             gridObjects[x, y] = gridObjects[x, aboveY];
                             gridObjects[x, aboveY] = null;
 
-                            gridObjects[x, y].transform.position = new Vector3(x, y, 0);
+                            StartCoroutine(MoveToPosition(gridObjects[x, y], new Vector3(x, y, 0), 0.2f));
                             gridObjects[x, y].GetComponent<Tile>().gridPosition = new Vector2Int(x, y);
                             break;
                         }
@@ -185,6 +203,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
+        // 2. Boş yerlere ekranın çok daha yukarısından (Görünmeyen alandan) yeni taş düşür
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
@@ -192,18 +211,24 @@ public class GridManager : MonoBehaviour
                 if (gridObjects[x, y] == null)
                 {
                     int randomIndex = Random.Range(0, tilePrefabs.Length);
-                    GameObject newTile = Instantiate(tilePrefabs[randomIndex], new Vector3(x, y, 0), Quaternion.identity, transform);
+                    
+                    // Yüksekliği (height + 3 + (height - y)) yaparak hem ekrandan uzakta doğmalarını 
+                    // hem de üst üste binerken doğal bir sıra ile düşmelerini sağlıyoruz.
+                    float spawnY = height + 3f + (height - y);
+                    
+                    GameObject newTile = Instantiate(tilePrefabs[randomIndex], new Vector3(x, spawnY, 0), Quaternion.identity, transform);
                     
                     Tile tileScript = newTile.GetComponent<Tile>();
                     if (tileScript == null) tileScript = newTile.AddComponent<Tile>();
                     tileScript.gridPosition = new Vector2Int(x, y);
 
                     gridObjects[x, y] = newTile;
+                    StartCoroutine(MoveToPosition(newTile, new Vector3(x, y, 0), 0.3f));
                 }
             }
         }
 
-        yield return new WaitForSeconds(0.4f);
+        yield return new WaitForSeconds(0.35f);
         StartCoroutine(CheckAndDestroyMatches());
     }
 }
