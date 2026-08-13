@@ -520,9 +520,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95c5eaf7645dece4a93c922630e310ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoundManager
-  selectSound: {fileID: 8300000, guid: e744174e6c2ff2e439807992c72f3788, type: 3}
-  swapSound: {fileID: 8300000, guid: 8e1688d7126336643ba8ab3d8bacde27, type: 3}
+  sfxSource: {fileID: 598066238}
+  clickSound: {fileID: 8300000, guid: e744174e6c2ff2e439807992c72f3788, type: 3}
   explodeSound: {fileID: 8300000, guid: 027710c2855d10a42964879e23e47f4c, type: 3}
+  swipeSound: {fileID: 8300000, guid: 8e1688d7126336643ba8ab3d8bacde27, type: 3}
+  winSound: {fileID: 8300000, guid: 307eecdaa8f48134fa17087df1ac6fb3, type: 3}
+  gameOverSound: {fileID: 8300000, guid: 67f933b205add7541892978a364558fd, type: 3}
 --- !u!4 &598066240
 Transform:
   m_ObjectHideFlags: 0
@@ -675,8 +678,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0.000061035156, y: -0.44143677}
+  m_SizeDelta: {x: 10.594, y: 11.477}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &738581439
 MonoBehaviour:
@@ -1678,8 +1681,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0.00012207031, y: -0.44140625}
+  m_SizeDelta: {x: 10.5942, y: 11.4771}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1706501046
 MonoBehaviour:
@@ -1757,7 +1760,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Player Won
+  m_text: Player Lost
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

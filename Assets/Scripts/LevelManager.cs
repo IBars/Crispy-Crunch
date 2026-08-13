@@ -17,11 +17,11 @@ public class LevelManager : MonoBehaviour
     public TextMeshProUGUI levelText;
     public TextMeshProUGUI goalText;
     public GameObject winPanel; 
-    public GameObject gameOverPanel; // Yeni ekledik
+    public GameObject gameOverPanel;
 
     [Header("Villain Messages")]
     public TextMeshProUGUI villainMessageText; 
-    public TextMeshProUGUI gameOverMessageText; // Game Over için yeni text
+    public TextMeshProUGUI gameOverMessageText;
 
     private string[] winTaunts = {
         "No, you can't win the next one!",
@@ -74,14 +74,20 @@ public class LevelManager : MonoBehaviour
         }
         else
         {
-            TriggerGameOver(); // Hedef tutmadıysa kaybettin!
+            TriggerGameOver();
         }
     }
 
     void TriggerWin()
     {
         isGameEnded = true;
-        if (villainMessageText != null)
+
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayWin();
+        }
+
+        if (villainMessageText != null && winTaunts.Length > 0)
             villainMessageText.text = winTaunts[Random.Range(0, winTaunts.Length)];
             
         if (winPanel != null) winPanel.SetActive(true);
@@ -92,7 +98,12 @@ public class LevelManager : MonoBehaviour
         isGameEnded = true;
         Debug.Log("GAME OVER!");
 
-        if (gameOverMessageText != null)
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayGameOver();
+        }
+
+        if (gameOverMessageText != null && lossTaunts.Length > 0)
             gameOverMessageText.text = lossTaunts[Random.Range(0, lossTaunts.Length)];
 
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
@@ -108,7 +119,6 @@ public class LevelManager : MonoBehaviour
 
     public void RetryLevel()
     {
-        // Seviyeyi arttırmadan sadece sahneyi yeniliyoruz
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
