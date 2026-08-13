@@ -124,7 +124,23 @@ public class LevelManager : MonoBehaviour
 
     void UpdateLevelUI()
     {
-        if (levelText != null) levelText.text = "Level " + currentLevel;
-        if (goalText != null) goalText.text = "Goal: " + currentDestroyedCount + " / " + targetDestroyCount;
+        if (levelText != null) 
+            levelText.text = "Level " + currentLevel;
+
+        if (goalText != null)
+        {
+            goalText.text = "Goal: " + currentDestroyedCount + " / " + targetDestroyCount;
+
+            // Renk geçiş mantığı: %0'da gri, %100'de parlak sarı/altın rengi
+            float progress = (float)currentDestroyedCount / targetDestroyCount;
+            // Mathf.Clamp ile progress'in 0-1 arasında kalmasını garanti ediyoruz
+            progress = Mathf.Clamp01(progress);
+            
+            // Gri'den parlak sarıya geçiş
+            Color startColor = new Color(0.8f, 0.8f, 0.8f); // Gri
+            Color endColor = new Color(1f, 0.9f, 0f);       // Parlak Sarı
+            
+            goalText.color = Color.Lerp(startColor, endColor, progress);
+        }
     }
 }

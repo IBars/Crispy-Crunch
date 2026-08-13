@@ -48,6 +48,13 @@ public class GridManager : MonoBehaviour
         {
             int remainingMoves = Mathf.Max(0, maxMoves - currentMoves);
             movesText.text = "Moves: " + remainingMoves + " / " + maxMoves;
+
+            // 1. Oranı hesapla: 1 (full) iken kırmızı, 0 (bitti) iken siyah
+            float ratio = (float)remainingMoves / maxMoves;
+            
+            // 2. Renk geçişini uygula
+            // Ratio 1 ise Red, 0 ise Black olacak
+            movesText.color = Color.Lerp(Color.black, Color.red, ratio);
         }
     }
 
