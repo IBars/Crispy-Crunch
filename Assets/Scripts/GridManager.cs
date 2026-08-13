@@ -30,8 +30,14 @@ public class GridManager : MonoBehaviour
         Instance = this;
     }
 
-    void Start()
+void Start()
     {
+        // Eğer LevelManager varsa rastgele oluşturulan maxMoves değerini al
+        if (LevelManager.Instance != null)
+        {
+            maxMoves = LevelManager.Instance.maxMoves;
+        }
+
         gridObjects = new GameObject[width, height];
         GenerateGrid();
         UpdateUI();
@@ -165,7 +171,6 @@ public class GridManager : MonoBehaviour
         }
 
         // 2. AŞAMA: YAYILMA (FLOOD FILL) ALGORİTMASI
-        // 3'lü eşleşen bloklara bitişik olan aynı renkli tüm komşuları bulur.
         HashSet<GameObject> tilesToDestroy = new HashSet<GameObject>();
         Queue<GameObject> queue = new Queue<GameObject>();
 
@@ -191,12 +196,10 @@ public class GridManager : MonoBehaviour
             {
                 Vector2Int nPos = pos + dir;
 
-                // Izgara sınırları kontrolü
                 if (nPos.x >= 0 && nPos.x < width && nPos.y >= 0 && nPos.y < height)
                 {
                     GameObject neighbor = gridObjects[nPos.x, nPos.y];
 
-                    // Bitişikte aynı renk/isimde bir blok varsa onu da ekle ve taramaya devam et
                     if (neighbor != null && !tilesToDestroy.Contains(neighbor))
                     {
                         if (neighbor.name == current.name)
@@ -209,7 +212,7 @@ public class GridManager : MonoBehaviour
             }
         }
 
-        // 3. AŞAMA: PATLATMA VE YENİDEN DOLDURMA
+        // 3. AŞAMA: PATLATMA VE LEVEL MANAGER'A HABER VERME
         if (tilesToDestroy.Count > 0)
         {
             if (SoundManager.Instance != null)
@@ -226,6 +229,12 @@ public class GridManager : MonoBehaviour
                 {
                     GameObject vfx = Instantiate(explosionPrefab, tile.transform.position, Quaternion.identity);
                     Destroy(vfx, 1f);
+                }
+
+                // LEVEL MANAGER GOAL BİLGİSİNİ GÜNCELLEME SATIRI:
+                if (LevelManager.Instance != null)
+                {
+                    LevelManager.Instance.AddDestroyedBlock(1);
                 }
 
                 Destroy(tile);
