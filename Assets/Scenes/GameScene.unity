@@ -1025,6 +1025,8 @@ MonoBehaviour:
   - {fileID: 8832530974655716828, guid: 10850f9e523fa344cbd034064e3e4845, type: 3}
   - {fileID: 1070884590599852090, guid: 9e83626db685b9747be6ef27ed2abac8, type: 3}
   - {fileID: 8327770226654501445, guid: 715a7347c55bcf64aaf56a109b06a5d0, type: 3}
+  - {fileID: 8061394321067306360, guid: 4891525d6faeba54fb7cd52f55f0b732, type: 3}
+  - {fileID: 4537902412182375389, guid: d9e96fac14f5cf142946f026cc12047d, type: 3}
   explosionPrefab: {fileID: 1047996301293844705, guid: 870b1bfec0cdeee45a4c74d8adb025d0, type: 3}
   maxMoves: 5
   movesText: {fileID: 421954641}
