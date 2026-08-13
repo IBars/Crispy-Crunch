@@ -7,6 +7,12 @@ public class Tile : MonoBehaviour
 
     private void OnMouseDown()
     {
+        // Eğer LevelManager varsa ve oyun bittiyse, tıklamaları tamamen engelle
+        if (LevelManager.Instance != null && LevelManager.Instance.isGameEnded)
+        {
+            return;
+        }
+
         if (selectedTile == null)
         {
             selectedTile = this;
@@ -14,12 +20,23 @@ public class Tile : MonoBehaviour
         }
         else
         {
+            if (selectedTile == this)
+            {
+                selectedTile = null;
+                return;
+            }
+
             if (IsAdjacent(selectedTile.gridPosition, gridPosition))
             {
                 GridManager.Instance.SwapTiles(selectedTile.gridPosition, gridPosition);
                 if (SoundManager.Instance != null) SoundManager.Instance.PlaySwap();
+                selectedTile = null;
             }
-            selectedTile = null;
+            else
+            {
+                selectedTile = this;
+                if (SoundManager.Instance != null) SoundManager.Instance.PlaySelect();
+            }
         }
     }
 

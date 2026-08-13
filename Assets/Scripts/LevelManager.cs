@@ -11,7 +11,7 @@ public class LevelManager : MonoBehaviour
     public int targetDestroyCount;
     public int maxMoves;
     public int currentDestroyedCount = 0;
-    private bool isGameEnded = false;
+    public bool isGameEnded = false;
 
     [Header("UI Elemanları")]
     public TextMeshProUGUI levelText;
