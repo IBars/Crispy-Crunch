@@ -17,16 +17,26 @@ public class LevelManager : MonoBehaviour
     public TextMeshProUGUI levelText;
     public TextMeshProUGUI goalText;
     public GameObject winPanel; 
+    public GameObject gameOverPanel; // Yeni ekledik
 
     [Header("Villain Messages")]
     public TextMeshProUGUI villainMessageText; 
-    private string[] villainTaunts = {
+    public TextMeshProUGUI gameOverMessageText; // Game Over için yeni text
+
+    private string[] winTaunts = {
         "No, you can't win the next one!",
-        "You just got lucky, don't get used to it!",
-        "Did you cheat?! How did you win?!",
-        "The next level will crush you!",
-        "Pure coincidence... Enjoy it while it lasts.",
-        "You won't escape next time!"
+        "You just got lucky!",
+        "How did you win?!",
+        "The next level will crush you!"
+    };
+
+    private string[] lossTaunts = {
+        "I told you you couldn't defeat me!",
+        "Ha! Not even close, human!",
+        "Did you really think you could win?",
+        "Better luck next time... you'll need it!",
+        "I always win in the end!",
+        "You gave it a try, but I am unstoppable!"
     };
 
     private void Awake()
@@ -38,10 +48,8 @@ public class LevelManager : MonoBehaviour
         maxMoves = Random.Range(3, 9); 
         currentDestroyedCount = 0;
 
-        if (winPanel != null)
-        {
-            winPanel.SetActive(false);
-        }
+        if (winPanel != null) winPanel.SetActive(false);
+        if (gameOverPanel != null) gameOverPanel.SetActive(false);
     }
 
     void Start()
@@ -52,44 +60,42 @@ public class LevelManager : MonoBehaviour
     public void AddDestroyedBlock(int amount = 1)
     {
         if (isGameEnded) return;
-
         currentDestroyedCount += amount;
         UpdateLevelUI();
-        // Hamleler bitmeden BURADA ASLA KAZANMA KONTROLÜ YAPILMAZ.
     }
 
-    // Bu fonksiyon SADECE hamleler bittikten sonra GridManager tarafından çağrılır
     public void CheckWinAfterExplosions()
     {
         if (isGameEnded) return;
 
-        // Sadece hamleler bittiğinde hedef tuttuysa kazan
         if (currentDestroyedCount >= targetDestroyCount)
         {
             TriggerWin();
         }
         else
         {
-            Debug.Log("Moves finished, but target not reached! You Lose / Game Over.");
-            // İleride buraya Game Over paneli ekleyebiliriz
+            TriggerGameOver(); // Hedef tutmadıysa kaybettin!
         }
     }
 
     void TriggerWin()
     {
         isGameEnded = true;
-        Debug.Log("LEVEL COMPLETED!");
+        if (villainMessageText != null)
+            villainMessageText.text = winTaunts[Random.Range(0, winTaunts.Length)];
+            
+        if (winPanel != null) winPanel.SetActive(true);
+    }
 
-        if (villainMessageText != null && villainTaunts.Length > 0)
-        {
-            int randomIndex = Random.Range(0, villainTaunts.Length);
-            villainMessageText.text = villainTaunts[randomIndex];
-        }
+    void TriggerGameOver()
+    {
+        isGameEnded = true;
+        Debug.Log("GAME OVER!");
 
-        if (winPanel != null)
-        {
-            winPanel.SetActive(true);
-        }
+        if (gameOverMessageText != null)
+            gameOverMessageText.text = lossTaunts[Random.Range(0, lossTaunts.Length)];
+
+        if (gameOverPanel != null) gameOverPanel.SetActive(true);
     }
 
     public void NextLevel()
@@ -97,16 +103,18 @@ public class LevelManager : MonoBehaviour
         currentLevel++;
         PlayerPrefs.SetInt("CurrentLevel", currentLevel);
         PlayerPrefs.Save();
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 
+    public void RetryLevel()
+    {
+        // Seviyeyi arttırmadan sadece sahneyi yeniliyoruz
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     void UpdateLevelUI()
     {
-        if (levelText != null)
-            levelText.text = "Level " + currentLevel;
-
-        if (goalText != null)
-            goalText.text = "Goal: " + currentDestroyedCount + " / " + targetDestroyCount;
+        if (levelText != null) levelText.text = "Level " + currentLevel;
+        if (goalText != null) goalText.text = "Goal: " + currentDestroyedCount + " / " + targetDestroyCount;
     }
 }
