@@ -119,8 +119,10 @@ public class GridManager : MonoBehaviour
     {
         yield return new WaitForSeconds(0.2f);
 
-        List<GameObject> tilesToDestroy = new List<GameObject>();
+        // 1. AŞAMA: Temel 3'lü eşleşmeleri tespit et (Yatay ve Dikey)
+        HashSet<GameObject> baseMatches = new HashSet<GameObject>();
 
+        // Yatay Kontrol
         for (int y = 0; y < height; y++)
         {
             for (int x = 0; x < width - 2; x++)
@@ -133,14 +135,15 @@ public class GridManager : MonoBehaviour
                 {
                     if (t1.name == t2.name && t2.name == t3.name)
                     {
-                        if (!tilesToDestroy.Contains(t1)) tilesToDestroy.Add(t1);
-                        if (!tilesToDestroy.Contains(t2)) tilesToDestroy.Add(t2);
-                        if (!tilesToDestroy.Contains(t3)) tilesToDestroy.Add(t3);
+                        baseMatches.Add(t1);
+                        baseMatches.Add(t2);
+                        baseMatches.Add(t3);
                     }
                 }
             }
         }
 
+        // Dikey Kontrol
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height - 2; y++)
@@ -153,17 +156,62 @@ public class GridManager : MonoBehaviour
                 {
                     if (t1.name == t2.name && t2.name == t3.name)
                     {
-                        if (!tilesToDestroy.Contains(t1)) tilesToDestroy.Add(t1);
-                        if (!tilesToDestroy.Contains(t2)) tilesToDestroy.Add(t2);
-                        if (!tilesToDestroy.Contains(t3)) tilesToDestroy.Add(t3);
+                        baseMatches.Add(t1);
+                        baseMatches.Add(t2);
+                        baseMatches.Add(t3);
                     }
                 }
             }
         }
 
+        // 2. AŞAMA: YAYILMA (FLOOD FILL) ALGORİTMASI
+        // 3'lü eşleşen bloklara bitişik olan aynı renkli tüm komşuları bulur.
+        HashSet<GameObject> tilesToDestroy = new HashSet<GameObject>();
+        Queue<GameObject> queue = new Queue<GameObject>();
+
+        foreach (GameObject tile in baseMatches)
+        {
+            tilesToDestroy.Add(tile);
+            queue.Enqueue(tile);
+        }
+
+        Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+
+        while (queue.Count > 0)
+        {
+            GameObject current = queue.Dequeue();
+            if (current == null) continue;
+
+            Tile tileScript = current.GetComponent<Tile>();
+            if (tileScript == null) continue;
+
+            Vector2Int pos = tileScript.gridPosition;
+
+            foreach (Vector2Int dir in directions)
+            {
+                Vector2Int nPos = pos + dir;
+
+                // Izgara sınırları kontrolü
+                if (nPos.x >= 0 && nPos.x < width && nPos.y >= 0 && nPos.y < height)
+                {
+                    GameObject neighbor = gridObjects[nPos.x, nPos.y];
+
+                    // Bitişikte aynı renk/isimde bir blok varsa onu da ekle ve taramaya devam et
+                    if (neighbor != null && !tilesToDestroy.Contains(neighbor))
+                    {
+                        if (neighbor.name == current.name)
+                        {
+                            tilesToDestroy.Add(neighbor);
+                            queue.Enqueue(neighbor);
+                        }
+                    }
+                }
+            }
+        }
+
+        // 3. AŞAMA: PATLATMA VE YENİDEN DOLDURMA
         if (tilesToDestroy.Count > 0)
         {
-            // Patlama Sesi
             if (SoundManager.Instance != null)
             {
                 SoundManager.Instance.PlayExplode();
