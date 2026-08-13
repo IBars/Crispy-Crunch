@@ -55,10 +55,23 @@ public class LevelManager : MonoBehaviour
 
         currentDestroyedCount += amount;
         UpdateLevelUI();
+        // Hamleler bitmeden BURADA ASLA KAZANMA KONTROLÜ YAPILMAZ.
+    }
 
+    // Bu fonksiyon SADECE hamleler bittikten sonra GridManager tarafından çağrılır
+    public void CheckWinAfterExplosions()
+    {
+        if (isGameEnded) return;
+
+        // Sadece hamleler bittiğinde hedef tuttuysa kazan
         if (currentDestroyedCount >= targetDestroyCount)
         {
             TriggerWin();
+        }
+        else
+        {
+            Debug.Log("Moves finished, but target not reached! You Lose / Game Over.");
+            // İleride buraya Game Over paneli ekleyebiliriz
         }
     }
 

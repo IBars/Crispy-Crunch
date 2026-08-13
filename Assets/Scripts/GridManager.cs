@@ -30,9 +30,8 @@ public class GridManager : MonoBehaviour
         Instance = this;
     }
 
-void Start()
+    void Start()
     {
-        // Eğer LevelManager varsa rastgele oluşturulan maxMoves değerini al
         if (LevelManager.Instance != null)
         {
             maxMoves = LevelManager.Instance.maxMoves;
@@ -125,7 +124,6 @@ void Start()
     {
         yield return new WaitForSeconds(0.2f);
 
-        // 1. AŞAMA: Temel 3'lü eşleşmeleri tespit et (Yatay ve Dikey)
         HashSet<GameObject> baseMatches = new HashSet<GameObject>();
 
         // Yatay Kontrol
@@ -170,7 +168,6 @@ void Start()
             }
         }
 
-        // 2. AŞAMA: YAYILMA (FLOOD FILL) ALGORİTMASI
         HashSet<GameObject> tilesToDestroy = new HashSet<GameObject>();
         Queue<GameObject> queue = new Queue<GameObject>();
 
@@ -212,7 +209,6 @@ void Start()
             }
         }
 
-        // 3. AŞAMA: PATLATMA VE LEVEL MANAGER'A HABER VERME
         if (tilesToDestroy.Count > 0)
         {
             if (SoundManager.Instance != null)
@@ -231,7 +227,6 @@ void Start()
                     Destroy(vfx, 1f);
                 }
 
-                // LEVEL MANAGER GOAL BİLGİSİNİ GÜNCELLEME SATIRI:
                 if (LevelManager.Instance != null)
                 {
                     LevelManager.Instance.AddDestroyedBlock(1);
@@ -247,6 +242,15 @@ void Start()
         {
             isBoomPhase = false;
             UpdateUI();
+
+            // DÜZELTME: Sadece hamleler bittiyse (veya tüketildiyse) oyun sonu kontrolünü yap
+            if (currentMoves >= maxMoves)
+            {
+                if (LevelManager.Instance != null)
+                {
+                    LevelManager.Instance.CheckWinAfterExplosions();
+                }
+            }
         }
     }
 
