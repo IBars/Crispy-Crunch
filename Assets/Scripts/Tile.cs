@@ -11,22 +11,21 @@ public class Tile : MonoBehaviour
     private Vector2 finalTouchPosition;
     private float swipeThreshold = 30f; 
     
-    // Gecikme hissini yok etmek için eklediğimiz kontrol
     private bool selectedJustNow = false;
 
     private void OnMouseDown()
     {
         if (LevelManager.Instance != null && LevelManager.Instance.isGameEnded) return;
 
-        if (Mouse.current != null)
+        // ÇÖZÜM 1: Mouse.current yerine evrensel Pointer.current kullanıyoruz.
+        // Bu sayede hem PC'de tıklamayı hem Mobilde parmak dokunuşunu anında algılar.
+        if (Pointer.current != null)
         {
-            firstTouchPosition = Mouse.current.position.ReadValue();
+            firstTouchPosition = Pointer.current.position.ReadValue();
         }
 
         selectedJustNow = false;
 
-        // SES VE TEPKİ GECİKMESİNİ ÖNLEMEK İÇİN: 
-        // Dokunduğun an seçimi yap ve sesi anında çal (Eski akıcı hissiyat)
         if (selectedTile == null)
         {
             selectedTile = this;
@@ -35,7 +34,6 @@ public class Tile : MonoBehaviour
         }
         else if (selectedTile != this && !IsAdjacent(selectedTile.gridPosition, gridPosition))
         {
-            // Yakın olmayan başka bir taşa tıkladıysa hemen yeni seçimi yap
             selectedTile = this;
             if (SoundManager.Instance != null) SoundManager.Instance.PlaySelect();
             selectedJustNow = true;
@@ -46,30 +44,26 @@ public class Tile : MonoBehaviour
     {
         if (LevelManager.Instance != null && LevelManager.Instance.isGameEnded) return;
 
-        if (Mouse.current != null)
+        // ÇÖZÜM 1 DEVAMI: Parmağı ekrandan çektiğimiz konumu alıyoruz
+        if (Pointer.current != null)
         {
-            finalTouchPosition = Mouse.current.position.ReadValue();
+            finalTouchPosition = Pointer.current.position.ReadValue();
         }
 
         float distance = Vector2.Distance(firstTouchPosition, finalTouchPosition);
 
-        // Eğer sürüklendiyse (Swipe)
         if (distance > swipeThreshold)
         {
             CalculateSwipe();
         }
-        // Eğer sadece tıklandıysa (Click)
         else
         {
-            // Eğer seçim işlemi bu karede yapılmadıysa (ikinci tıklama/swap/iptal işlemleri)
             if (!selectedJustNow) 
             {
-                // Aynı taşa 2. kez tıklandıysa seçimi iptal et
                 if (selectedTile == this)
                 {
                     selectedTile = null;
                 }
-                // Komşu taşa tıklandıysa yer değiştir
                 else if (selectedTile != null && IsAdjacent(selectedTile.gridPosition, gridPosition))
                 {
                     GridManager.Instance.SwapTiles(selectedTile.gridPosition, gridPosition);

@@ -24,10 +24,14 @@ public class GridManager : MonoBehaviour
     public TextMeshProUGUI movesText;
 
     private GameObject[,] gridObjects;
+    private HashSet<GameObject> baseMatches = new HashSet<GameObject>();
+    private HashSet<GameObject> tilesToDestroy = new HashSet<GameObject>();
+    private Queue<GameObject> queue = new Queue<GameObject>();
 
     private void Awake()
     {
         Instance = this;
+        Application.targetFrameRate = 60;
     }
 
     void Start()
@@ -128,138 +132,137 @@ public class GridManager : MonoBehaviour
     }
 
     private IEnumerator CheckAndDestroyMatches()
+{
+    yield return new WaitForSeconds(0.2f);
+
+    // Her seferinde yeni liste yaratmak yerine eskisini temizleyip kullanıyoruz (GC Koruması)
+    baseMatches.Clear();
+    tilesToDestroy.Clear();
+    queue.Clear();
+
+    // Yatay Kontrol
+    for (int y = 0; y < height; y++)
     {
-        yield return new WaitForSeconds(0.2f);
-
-        HashSet<GameObject> baseMatches = new HashSet<GameObject>();
-
-        // Yatay Kontrol
-        for (int y = 0; y < height; y++)
+        for (int x = 0; x < width - 2; x++)
         {
-            for (int x = 0; x < width - 2; x++)
+            GameObject t1 = gridObjects[x, y];
+            GameObject t2 = gridObjects[x + 1, y];
+            GameObject t3 = gridObjects[x + 2, y];
+
+            if (t1 != null && t2 != null && t3 != null)
             {
-                GameObject t1 = gridObjects[x, y];
-                GameObject t2 = gridObjects[x + 1, y];
-                GameObject t3 = gridObjects[x + 2, y];
-
-                if (t1 != null && t2 != null && t3 != null)
+                if (t1.name == t2.name && t2.name == t3.name)
                 {
-                    if (t1.name == t2.name && t2.name == t3.name)
-                    {
-                        baseMatches.Add(t1);
-                        baseMatches.Add(t2);
-                        baseMatches.Add(t3);
-                    }
-                }
-            }
-        }
-
-        // Dikey Kontrol
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height - 2; y++)
-            {
-                GameObject t1 = gridObjects[x, y];
-                GameObject t2 = gridObjects[x, y + 1];
-                GameObject t3 = gridObjects[x, y + 2];
-
-                if (t1 != null && t2 != null && t3 != null)
-                {
-                    if (t1.name == t2.name && t2.name == t3.name)
-                    {
-                        baseMatches.Add(t1);
-                        baseMatches.Add(t2);
-                        baseMatches.Add(t3);
-                    }
-                }
-            }
-        }
-
-        HashSet<GameObject> tilesToDestroy = new HashSet<GameObject>();
-        Queue<GameObject> queue = new Queue<GameObject>();
-
-        foreach (GameObject tile in baseMatches)
-        {
-            tilesToDestroy.Add(tile);
-            queue.Enqueue(tile);
-        }
-
-        Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-
-        while (queue.Count > 0)
-        {
-            GameObject current = queue.Dequeue();
-            if (current == null) continue;
-
-            Tile tileScript = current.GetComponent<Tile>();
-            if (tileScript == null) continue;
-
-            Vector2Int pos = tileScript.gridPosition;
-
-            foreach (Vector2Int dir in directions)
-            {
-                Vector2Int nPos = pos + dir;
-
-                if (nPos.x >= 0 && nPos.x < width && nPos.y >= 0 && nPos.y < height)
-                {
-                    GameObject neighbor = gridObjects[nPos.x, nPos.y];
-
-                    if (neighbor != null && !tilesToDestroy.Contains(neighbor))
-                    {
-                        if (neighbor.name == current.name)
-                        {
-                            tilesToDestroy.Add(neighbor);
-                            queue.Enqueue(neighbor);
-                        }
-                    }
-                }
-            }
-        }
-
-        if (tilesToDestroy.Count > 0)
-        {
-            if (SoundManager.Instance != null)
-            {
-                SoundManager.Instance.PlayExplode();
-            }
-
-            foreach (GameObject tile in tilesToDestroy)
-            {
-                Tile tileScript = tile.GetComponent<Tile>();
-                gridObjects[tileScript.gridPosition.x, tileScript.gridPosition.y] = null;
-                
-                if (explosionPrefab != null)
-                {
-                    GameObject vfx = Instantiate(explosionPrefab, tile.transform.position, Quaternion.identity);
-                    Destroy(vfx, 1f);
-                }
-
-                if (LevelManager.Instance != null)
-                {
-                    LevelManager.Instance.AddDestroyedBlock(1);
-                }
-
-                Destroy(tile);
-            }
-
-            yield return new WaitForSeconds(0.25f);
-            StartCoroutine(ApplyGravityAndRefill());
-        }
-        else
-        {
-            isBoomPhase = false;
-            UpdateUI();
-
-            // DÜZELTME: Sadece hamleler bittiyse (veya tüketildiyse) oyun sonu kontrolünü yap
-            if (currentMoves >= maxMoves)
-            {
-                if (LevelManager.Instance != null)
-                {
-                    LevelManager.Instance.CheckWinAfterExplosions();
+                    baseMatches.Add(t1);
+                    baseMatches.Add(t2);
+                    baseMatches.Add(t3);
                 }
             }
         }
     }
+
+    // Dikey Kontrol
+    for (int x = 0; x < width; x++)
+    {
+        for (int y = 0; y < height - 2; y++)
+        {
+            GameObject t1 = gridObjects[x, y];
+            GameObject t2 = gridObjects[x, y + 1];
+            GameObject t3 = gridObjects[x, y + 2];
+
+            if (t1 != null && t2 != null && t3 != null)
+            {
+                if (t1.name == t2.name && t2.name == t3.name)
+                {
+                    baseMatches.Add(t1);
+                    baseMatches.Add(t2);
+                    baseMatches.Add(t3);
+                }
+            }
+        }
+    }
+
+    foreach (GameObject tile in baseMatches)
+    {
+        tilesToDestroy.Add(tile);
+        queue.Enqueue(tile);
+    }
+
+    Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+
+    while (queue.Count > 0)
+    {
+        GameObject current = queue.Dequeue();
+        if (current == null) continue;
+
+        Tile tileScript = current.GetComponent<Tile>();
+        if (tileScript == null) continue;
+
+        Vector2Int pos = tileScript.gridPosition;
+
+        foreach (Vector2Int dir in directions)
+        {
+            Vector2Int nPos = pos + dir;
+
+            if (nPos.x >= 0 && nPos.x < width && nPos.y >= 0 && nPos.y < height)
+            {
+                GameObject neighbor = gridObjects[nPos.x, nPos.y];
+
+                if (neighbor != null && !tilesToDestroy.Contains(neighbor))
+                {
+                    if (neighbor.name == current.name)
+                    {
+                        tilesToDestroy.Add(neighbor);
+                        queue.Enqueue(neighbor);
+                    }
+                }
+            }
+        }
+    }
+
+    if (tilesToDestroy.Count > 0)
+    {
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayExplode();
+        }
+
+        foreach (GameObject tile in tilesToDestroy)
+        {
+            Tile tileScript = tile.GetComponent<Tile>();
+            gridObjects[tileScript.gridPosition.x, tileScript.gridPosition.y] = null;
+            
+            if (explosionPrefab != null)
+            {
+                GameObject vfx = Instantiate(explosionPrefab, tile.transform.position, Quaternion.identity);
+                Destroy(vfx, 1f);
+            }
+
+            if (LevelManager.Instance != null)
+            {
+                LevelManager.Instance.AddDestroyedBlock(1);
+            }
+
+            Destroy(tile);
+        }
+
+        yield return new WaitForSeconds(0.25f);
+        StartCoroutine(ApplyGravityAndRefill());
+    }
+    else
+    {
+        isBoomPhase = false;
+        UpdateUI();
+
+        if (currentMoves >= maxMoves)
+        {
+            if (LevelManager.Instance != null)
+            {
+                LevelManager.Instance.CheckWinAfterExplosions();
+            }
+        }
+    }
+}
 
     private IEnumerator ApplyGravityAndRefill()
     {
