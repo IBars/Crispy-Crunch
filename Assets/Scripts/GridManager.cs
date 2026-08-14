@@ -32,6 +32,11 @@ public class GridManager : MonoBehaviour
     {
         Instance = this;
         Application.targetFrameRate = 60;
+
+        if (MenuMusicManager.Instance != null)
+{
+    MenuMusicManager.Instance.StopMenuMusic();
+}
     }
 
     void Start()
