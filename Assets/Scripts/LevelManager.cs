@@ -113,8 +113,18 @@ public class LevelManager : MonoBehaviour
     {
         currentLevel++;
         PlayerPrefs.SetInt("CurrentLevel", currentLevel);
+
+        // KİLİT SİSTEMİ: Oyuncunun gelebildiği en yüksek (unlocked) leveli güncelliyoruz
+        int unlockedLevel = PlayerPrefs.GetInt("UnlockedLevel", 1);
+        if (currentLevel > unlockedLevel)
+        {
+            PlayerPrefs.SetInt("UnlockedLevel", currentLevel);
+        }
+        
         PlayerPrefs.Save();
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        
+        // BÖLÜM BİTİNCE HARİTAYA DÖN (Eğer harita sahnenin adı "MapScene" değilse burayı kendi sahne adına göre değiştir)
+        SceneManager.LoadScene("Menu"); 
     }
 
     public void RetryLevel()

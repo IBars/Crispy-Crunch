@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2180862940643361999}
+  - component: {fileID: 3886551999293368062}
   - component: {fileID: 1620732943845485910}
   - component: {fileID: 51456606580820391}
   - component: {fileID: 3603052337103503945}
@@ -39,6 +40,19 @@ RectTransform:
   m_AnchoredPosition: {x: -2.1695, y: -43.70882}
   m_SizeDelta: {x: 9.3365, y: 4.73384}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &3886551999293368062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3725223274066874423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f09aabea5fb29574e9dcae88473415e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LevelButton
+  levelText: {fileID: 4991272229591985707}
 --- !u!222 &1620732943845485910
 CanvasRenderer:
   m_ObjectHideFlags: 0
