@@ -89,7 +89,16 @@ public class LevelManager : MonoBehaviour
 
         if (villainMessageText != null && winTaunts.Length > 0)
             villainMessageText.text = winTaunts[Random.Range(0, winTaunts.Length)];
-            
+
+        // KİLİT SİSTEMİ: Kazanınca bir sonraki levelin kilidini hemen aç
+        int unlockedLevel = PlayerPrefs.GetInt("UnlockedLevel", 1);
+        int nextLevel = currentLevel + 1;
+        if (nextLevel > unlockedLevel)
+        {
+            PlayerPrefs.SetInt("UnlockedLevel", nextLevel);
+            PlayerPrefs.Save();
+        }
+
         if (winPanel != null) winPanel.SetActive(true);
     }
 
@@ -109,22 +118,10 @@ public class LevelManager : MonoBehaviour
         if (gameOverPanel != null) gameOverPanel.SetActive(true);
     }
 
-    public void NextLevel()
+    public void GoToMap()
     {
-        currentLevel++;
-        PlayerPrefs.SetInt("CurrentLevel", currentLevel);
-
-        // KİLİT SİSTEMİ: Oyuncunun gelebildiği en yüksek (unlocked) leveli güncelliyoruz
-        int unlockedLevel = PlayerPrefs.GetInt("UnlockedLevel", 1);
-        if (currentLevel > unlockedLevel)
-        {
-            PlayerPrefs.SetInt("UnlockedLevel", currentLevel);
-        }
-        
-        PlayerPrefs.Save();
-        
-        // BÖLÜM BİTİNCE HARİTAYA DÖN (Eğer harita sahnenin adı "MapScene" değilse burayı kendi sahne adına göre değiştir)
-        SceneManager.LoadScene("Menu"); 
+        if (SoundManager.Instance != null) SoundManager.Instance.PlayClick();
+        SceneManager.LoadScene("Menu");
     }
 
     public void RetryLevel()
@@ -141,14 +138,11 @@ public class LevelManager : MonoBehaviour
         {
             goalText.text = "Goal: " + currentDestroyedCount + " / " + targetDestroyCount;
 
-            // Renk geçiş mantığı: %0'da gri, %100'de parlak sarı/altın rengi
             float progress = (float)currentDestroyedCount / targetDestroyCount;
-            // Mathf.Clamp ile progress'in 0-1 arasında kalmasını garanti ediyoruz
             progress = Mathf.Clamp01(progress);
             
-            // Gri'den parlak sarıya geçiş
-            Color startColor = new Color(0.8f, 0.8f, 0.8f); // Gri
-            Color endColor = new Color(1f, 0.9f, 0f);       // Parlak Sarı
+            Color startColor = new Color(0.8f, 0.8f, 0.8f);
+            Color endColor = new Color(1f, 0.9f, 0f);
             
             goalText.color = Color.Lerp(startColor, endColor, progress);
         }
