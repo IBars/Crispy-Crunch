@@ -28,6 +28,9 @@ public class GridManager : MonoBehaviour
     private HashSet<GameObject> tilesToDestroy = new HashSet<GameObject>();
     private Queue<GameObject> queue = new Queue<GameObject>();
 
+    private GameObject groundObject;
+    private PhysicsMaterial2D bounceMaterial;
+
     private void Awake()
     {
         Instance = this;
@@ -259,7 +262,7 @@ public class GridManager : MonoBehaviour
                     }
                     else
                     {
-                        StartCoroutine(PlayLoseExplosionAndShowGameOver());
+                        StartCoroutine(PlayLosePhysicsAndShowGameOver());
                     }
                 }
             }
@@ -315,12 +318,42 @@ public class GridManager : MonoBehaviour
         StartCoroutine(CheckAndDestroyMatches());
     }
 
-    private IEnumerator PlayLoseExplosionAndShowGameOver()
+    // ---------- KAYBETME: FİZİK TABANLI DAĞILMA ----------
+
+    private void EnsureGroundAndMaterial()
     {
-        if (SoundManager.Instance != null)
+        if (bounceMaterial == null)
         {
-            SoundManager.Instance.PlayExplode();
+            bounceMaterial = new PhysicsMaterial2D("TileBounce");
+            bounceMaterial.bounciness = 0.35f;
+            bounceMaterial.friction = 0.2f;
         }
+
+        if (groundObject == null)
+        {
+            Vector3 bottomLeft = Camera.main.ViewportToWorldPoint(new Vector3(0f, 0f, 10f));
+            Vector3 bottomRight = Camera.main.ViewportToWorldPoint(new Vector3(1f, 0f, 10f));
+
+            groundObject = new GameObject("InvisibleGround");
+            BoxCollider2D groundCollider = groundObject.AddComponent<BoxCollider2D>();
+
+            float groundWidth = (bottomRight.x - bottomLeft.x) * 2f;
+            groundCollider.size = new Vector2(groundWidth, 0.5f);
+            groundCollider.sharedMaterial = bounceMaterial;
+
+            groundObject.transform.position = new Vector3(
+                (bottomLeft.x + bottomRight.x) / 2f,
+                bottomLeft.y,
+                0f
+            );
+        }
+    }
+
+    private IEnumerator PlayLosePhysicsAndShowGameOver()
+    {
+        EnsureGroundAndMaterial();
+
+        List<GameObject> fallingTiles = new List<GameObject>();
 
         for (int x = 0; x < width; x++)
         {
@@ -329,20 +362,19 @@ public class GridManager : MonoBehaviour
                 GameObject tile = gridObjects[x, y];
                 if (tile != null)
                 {
-                    StartCoroutine(ScatterTile(tile));
+                    fallingTiles.Add(tile);
                     gridObjects[x, y] = null;
                 }
             }
         }
 
-        if (explosionPrefab != null)
+        foreach (GameObject tile in fallingTiles)
         {
-            Vector3 center = new Vector3((float)width / 2 - 0.5f, (float)height / 2 - 0.5f, 0);
-            GameObject vfx = Instantiate(explosionPrefab, center, Quaternion.identity);
-            Destroy(vfx, 1.5f);
+            StartCoroutine(DropTileWithPhysics(tile));
         }
 
-        yield return new WaitForSeconds(0.8f);
+        // Taşların düşüp zıplayıp ekrandan çıkması için yeterli süre bekle
+        yield return new WaitForSeconds(2.5f);
 
         if (LevelManager.Instance != null)
         {
@@ -350,31 +382,40 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    private IEnumerator ScatterTile(GameObject tile)
+    private IEnumerator DropTileWithPhysics(GameObject tile)
     {
         if (tile == null) yield break;
 
-        Vector3 startPos = tile.transform.position;
-        Vector2 randomDir = Random.insideUnitCircle.normalized;
-        Vector3 targetPos = startPos + (Vector3)(randomDir * Random.Range(3f, 6f)) + Vector3.down * Random.Range(0f, 2f);
+        // Taşlar aynı anda değil, ufak rastgele gecikmeyle düşmeye başlasın
+        yield return new WaitForSeconds(Random.Range(0f, 0.4f));
 
-        SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
-        float duration = 0.6f;
+        if (tile == null) yield break;
+
+        Collider2D col = tile.GetComponent<Collider2D>();
+        if (col == null) col = tile.AddComponent<BoxCollider2D>();
+        col.sharedMaterial = bounceMaterial;
+
+        Rigidbody2D rb = tile.AddComponent<Rigidbody2D>();
+        rb.gravityScale = 2.2f; // doğal ivme: önce yavaş, sonra hızlanarak düşer
+        rb.linearVelocity = new Vector2(Random.Range(-1.5f, 1.5f), 0f); // rastgele yöne kayma
+        rb.angularVelocity = Random.Range(-300f, 300f); // doğal, çeşitli dönüş
+
+        Vector3 bottomLeft = Camera.main.ViewportToWorldPoint(new Vector3(0f, 0f, 10f));
+        Vector3 topRight = Camera.main.ViewportToWorldPoint(new Vector3(1f, 1f, 10f));
+
+        float timeout = 4f;
         float elapsed = 0f;
 
-        while (elapsed < duration)
+        while (elapsed < timeout)
         {
             if (tile == null) yield break;
 
-            float t = elapsed / duration;
-            tile.transform.position = Vector3.Lerp(startPos, targetPos, t);
-            tile.transform.Rotate(0, 0, 360f * Time.deltaTime);
-
-            if (sr != null)
+            if (tile.transform.position.y < bottomLeft.y - 3f ||
+                tile.transform.position.x < bottomLeft.x - 3f ||
+                tile.transform.position.x > topRight.x + 3f)
             {
-                Color c = sr.color;
-                c.a = Mathf.Lerp(1f, 0f, t);
-                sr.color = c;
+                Destroy(tile);
+                yield break;
             }
 
             elapsed += Time.deltaTime;
