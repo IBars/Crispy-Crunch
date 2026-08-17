@@ -16,11 +16,11 @@ public class LevelManager : MonoBehaviour
     [Header("UI Elemanları")]
     public TextMeshProUGUI levelText;
     public TextMeshProUGUI goalText;
-    public GameObject winPanel; 
+    public GameObject winPanel;
     public GameObject gameOverPanel;
 
     [Header("Villain Messages")]
-    public TextMeshProUGUI villainMessageText; 
+    public TextMeshProUGUI villainMessageText;
     public TextMeshProUGUI gameOverMessageText;
 
     private string[] winTaunts = {
@@ -42,10 +42,10 @@ public class LevelManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        
+
         currentLevel = PlayerPrefs.GetInt("CurrentLevel", 1);
-        targetDestroyCount = Random.Range(10, 31); 
-        maxMoves = Random.Range(3, 9); 
+        targetDestroyCount = Random.Range(10, 31);
+        maxMoves = Random.Range(3, 9);
         currentDestroyedCount = 0;
 
         if (winPanel != null) winPanel.SetActive(false);
@@ -64,11 +64,16 @@ public class LevelManager : MonoBehaviour
         UpdateLevelUI();
     }
 
+    public bool HasReachedGoal()
+    {
+        return currentDestroyedCount >= targetDestroyCount;
+    }
+
     public void CheckWinAfterExplosions()
     {
         if (isGameEnded) return;
 
-        if (currentDestroyedCount >= targetDestroyCount)
+        if (HasReachedGoal())
         {
             TriggerWin();
         }
@@ -78,8 +83,9 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    void TriggerWin()
+    public void TriggerWin()
     {
+        if (isGameEnded) return;
         isGameEnded = true;
 
         if (SoundManager.Instance != null)
@@ -90,7 +96,6 @@ public class LevelManager : MonoBehaviour
         if (villainMessageText != null && winTaunts.Length > 0)
             villainMessageText.text = winTaunts[Random.Range(0, winTaunts.Length)];
 
-        // KİLİT SİSTEMİ: Kazanınca bir sonraki levelin kilidini hemen aç
         int unlockedLevel = PlayerPrefs.GetInt("UnlockedLevel", 1);
         int nextLevel = currentLevel + 1;
         if (nextLevel > unlockedLevel)
@@ -102,8 +107,9 @@ public class LevelManager : MonoBehaviour
         if (winPanel != null) winPanel.SetActive(true);
     }
 
-    void TriggerGameOver()
+    public void TriggerGameOver()
     {
+        if (isGameEnded) return;
         isGameEnded = true;
         Debug.Log("GAME OVER!");
 
@@ -131,7 +137,7 @@ public class LevelManager : MonoBehaviour
 
     void UpdateLevelUI()
     {
-        if (levelText != null) 
+        if (levelText != null)
             levelText.text = "Level " + currentLevel;
 
         if (goalText != null)
@@ -140,10 +146,10 @@ public class LevelManager : MonoBehaviour
 
             float progress = (float)currentDestroyedCount / targetDestroyCount;
             progress = Mathf.Clamp01(progress);
-            
+
             Color startColor = new Color(0.8f, 0.8f, 0.8f);
             Color endColor = new Color(1f, 0.9f, 0f);
-            
+
             goalText.color = Color.Lerp(startColor, endColor, progress);
         }
     }

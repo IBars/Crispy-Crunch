@@ -32,11 +32,6 @@ public class GridManager : MonoBehaviour
     {
         Instance = this;
         Application.targetFrameRate = 60;
-
-        if (MenuMusicManager.Instance != null)
-{
-    MenuMusicManager.Instance.StopMenuMusic();
-}
     }
 
     void Start()
@@ -56,13 +51,9 @@ public class GridManager : MonoBehaviour
         if (movesText != null)
         {
             int remainingMoves = Mathf.Max(0, maxMoves - currentMoves);
-            movesText.text = "Moves: " + remainingMoves + " / " + maxMoves;
+            movesText.text = "Moves: " + remainingMoves;
 
-            // 1. Oranı hesapla: 1 (full) iken kırmızı, 0 (bitti) iken siyah
             float ratio = (float)remainingMoves / maxMoves;
-            
-            // 2. Renk geçişini uygula
-            // Ratio 1 ise Red, 0 ise Black olacak
             movesText.color = Color.Lerp(Color.black, Color.red, ratio);
         }
     }
@@ -75,7 +66,7 @@ public class GridManager : MonoBehaviour
             {
                 int randomIndex = Random.Range(0, tilePrefabs.Length);
                 GameObject tile = Instantiate(tilePrefabs[randomIndex], new Vector3(x, y, 0), Quaternion.identity, transform);
-                
+
                 Tile tileScript = tile.GetComponent<Tile>();
                 if (tileScript == null) tileScript = tile.AddComponent<Tile>();
                 tileScript.gridPosition = new Vector2Int(x, y);
@@ -137,137 +128,143 @@ public class GridManager : MonoBehaviour
     }
 
     private IEnumerator CheckAndDestroyMatches()
-{
-    yield return new WaitForSeconds(0.2f);
-
-    // Her seferinde yeni liste yaratmak yerine eskisini temizleyip kullanıyoruz (GC Koruması)
-    baseMatches.Clear();
-    tilesToDestroy.Clear();
-    queue.Clear();
-
-    // Yatay Kontrol
-    for (int y = 0; y < height; y++)
     {
-        for (int x = 0; x < width - 2; x++)
+        yield return new WaitForSeconds(0.2f);
+
+        baseMatches.Clear();
+        tilesToDestroy.Clear();
+        queue.Clear();
+
+        // Yatay Kontrol
+        for (int y = 0; y < height; y++)
         {
-            GameObject t1 = gridObjects[x, y];
-            GameObject t2 = gridObjects[x + 1, y];
-            GameObject t3 = gridObjects[x + 2, y];
-
-            if (t1 != null && t2 != null && t3 != null)
+            for (int x = 0; x < width - 2; x++)
             {
-                if (t1.name == t2.name && t2.name == t3.name)
+                GameObject t1 = gridObjects[x, y];
+                GameObject t2 = gridObjects[x + 1, y];
+                GameObject t3 = gridObjects[x + 2, y];
+
+                if (t1 != null && t2 != null && t3 != null)
                 {
-                    baseMatches.Add(t1);
-                    baseMatches.Add(t2);
-                    baseMatches.Add(t3);
-                }
-            }
-        }
-    }
-
-    // Dikey Kontrol
-    for (int x = 0; x < width; x++)
-    {
-        for (int y = 0; y < height - 2; y++)
-        {
-            GameObject t1 = gridObjects[x, y];
-            GameObject t2 = gridObjects[x, y + 1];
-            GameObject t3 = gridObjects[x, y + 2];
-
-            if (t1 != null && t2 != null && t3 != null)
-            {
-                if (t1.name == t2.name && t2.name == t3.name)
-                {
-                    baseMatches.Add(t1);
-                    baseMatches.Add(t2);
-                    baseMatches.Add(t3);
-                }
-            }
-        }
-    }
-
-    foreach (GameObject tile in baseMatches)
-    {
-        tilesToDestroy.Add(tile);
-        queue.Enqueue(tile);
-    }
-
-    Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
-
-    while (queue.Count > 0)
-    {
-        GameObject current = queue.Dequeue();
-        if (current == null) continue;
-
-        Tile tileScript = current.GetComponent<Tile>();
-        if (tileScript == null) continue;
-
-        Vector2Int pos = tileScript.gridPosition;
-
-        foreach (Vector2Int dir in directions)
-        {
-            Vector2Int nPos = pos + dir;
-
-            if (nPos.x >= 0 && nPos.x < width && nPos.y >= 0 && nPos.y < height)
-            {
-                GameObject neighbor = gridObjects[nPos.x, nPos.y];
-
-                if (neighbor != null && !tilesToDestroy.Contains(neighbor))
-                {
-                    if (neighbor.name == current.name)
+                    if (t1.name == t2.name && t2.name == t3.name)
                     {
-                        tilesToDestroy.Add(neighbor);
-                        queue.Enqueue(neighbor);
+                        baseMatches.Add(t1);
+                        baseMatches.Add(t2);
+                        baseMatches.Add(t3);
+                    }
+                }
+            }
+        }
+
+        // Dikey Kontrol
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height - 2; y++)
+            {
+                GameObject t1 = gridObjects[x, y];
+                GameObject t2 = gridObjects[x, y + 1];
+                GameObject t3 = gridObjects[x, y + 2];
+
+                if (t1 != null && t2 != null && t3 != null)
+                {
+                    if (t1.name == t2.name && t2.name == t3.name)
+                    {
+                        baseMatches.Add(t1);
+                        baseMatches.Add(t2);
+                        baseMatches.Add(t3);
+                    }
+                }
+            }
+        }
+
+        foreach (GameObject tile in baseMatches)
+        {
+            tilesToDestroy.Add(tile);
+            queue.Enqueue(tile);
+        }
+
+        Vector2Int[] directions = { Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right };
+
+        while (queue.Count > 0)
+        {
+            GameObject current = queue.Dequeue();
+            if (current == null) continue;
+
+            Tile tileScript = current.GetComponent<Tile>();
+            if (tileScript == null) continue;
+
+            Vector2Int pos = tileScript.gridPosition;
+
+            foreach (Vector2Int dir in directions)
+            {
+                Vector2Int nPos = pos + dir;
+
+                if (nPos.x >= 0 && nPos.x < width && nPos.y >= 0 && nPos.y < height)
+                {
+                    GameObject neighbor = gridObjects[nPos.x, nPos.y];
+
+                    if (neighbor != null && !tilesToDestroy.Contains(neighbor))
+                    {
+                        if (neighbor.name == current.name)
+                        {
+                            tilesToDestroy.Add(neighbor);
+                            queue.Enqueue(neighbor);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (tilesToDestroy.Count > 0)
+        {
+            if (SoundManager.Instance != null)
+            {
+                SoundManager.Instance.PlayExplode();
+            }
+
+            foreach (GameObject tile in tilesToDestroy)
+            {
+                Tile tileScript = tile.GetComponent<Tile>();
+                gridObjects[tileScript.gridPosition.x, tileScript.gridPosition.y] = null;
+
+                if (explosionPrefab != null)
+                {
+                    GameObject vfx = Instantiate(explosionPrefab, tile.transform.position, Quaternion.identity);
+                    Destroy(vfx, 1f);
+                }
+
+                if (LevelManager.Instance != null)
+                {
+                    LevelManager.Instance.AddDestroyedBlock(1);
+                }
+
+                Destroy(tile);
+            }
+
+            yield return new WaitForSeconds(0.25f);
+            StartCoroutine(ApplyGravityAndRefill());
+        }
+        else
+        {
+            isBoomPhase = false;
+            UpdateUI();
+
+            if (currentMoves >= maxMoves)
+            {
+                if (LevelManager.Instance != null)
+                {
+                    if (LevelManager.Instance.HasReachedGoal())
+                    {
+                        LevelManager.Instance.TriggerWin();
+                    }
+                    else
+                    {
+                        StartCoroutine(PlayLoseExplosionAndShowGameOver());
                     }
                 }
             }
         }
     }
-
-    if (tilesToDestroy.Count > 0)
-    {
-        if (SoundManager.Instance != null)
-        {
-            SoundManager.Instance.PlayExplode();
-        }
-
-        foreach (GameObject tile in tilesToDestroy)
-        {
-            Tile tileScript = tile.GetComponent<Tile>();
-            gridObjects[tileScript.gridPosition.x, tileScript.gridPosition.y] = null;
-            
-            if (explosionPrefab != null)
-            {
-                GameObject vfx = Instantiate(explosionPrefab, tile.transform.position, Quaternion.identity);
-                Destroy(vfx, 1f);
-            }
-
-            if (LevelManager.Instance != null)
-            {
-                LevelManager.Instance.AddDestroyedBlock(1);
-            }
-
-            Destroy(tile);
-        }
-
-        yield return new WaitForSeconds(0.25f);
-        StartCoroutine(ApplyGravityAndRefill());
-    }
-    else
-    {
-        isBoomPhase = false;
-        UpdateUI();
-
-        if (currentMoves >= maxMoves)
-        {
-            if (LevelManager.Instance != null)
-            {
-                LevelManager.Instance.CheckWinAfterExplosions();
-            }
-        }
-    }
-}
 
     private IEnumerator ApplyGravityAndRefill()
     {
@@ -301,9 +298,9 @@ public class GridManager : MonoBehaviour
                 {
                     int randomIndex = Random.Range(0, tilePrefabs.Length);
                     float spawnY = height + 3f + (height - y);
-                    
+
                     GameObject newTile = Instantiate(tilePrefabs[randomIndex], new Vector3(x, spawnY, 0), Quaternion.identity, transform);
-                    
+
                     Tile tileScript = newTile.GetComponent<Tile>();
                     if (tileScript == null) tileScript = newTile.AddComponent<Tile>();
                     tileScript.gridPosition = new Vector2Int(x, y);
@@ -316,5 +313,74 @@ public class GridManager : MonoBehaviour
 
         yield return new WaitForSeconds(0.35f);
         StartCoroutine(CheckAndDestroyMatches());
+    }
+
+    private IEnumerator PlayLoseExplosionAndShowGameOver()
+    {
+        if (SoundManager.Instance != null)
+        {
+            SoundManager.Instance.PlayExplode();
+        }
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                GameObject tile = gridObjects[x, y];
+                if (tile != null)
+                {
+                    StartCoroutine(ScatterTile(tile));
+                    gridObjects[x, y] = null;
+                }
+            }
+        }
+
+        if (explosionPrefab != null)
+        {
+            Vector3 center = new Vector3((float)width / 2 - 0.5f, (float)height / 2 - 0.5f, 0);
+            GameObject vfx = Instantiate(explosionPrefab, center, Quaternion.identity);
+            Destroy(vfx, 1.5f);
+        }
+
+        yield return new WaitForSeconds(0.8f);
+
+        if (LevelManager.Instance != null)
+        {
+            LevelManager.Instance.TriggerGameOver();
+        }
+    }
+
+    private IEnumerator ScatterTile(GameObject tile)
+    {
+        if (tile == null) yield break;
+
+        Vector3 startPos = tile.transform.position;
+        Vector2 randomDir = Random.insideUnitCircle.normalized;
+        Vector3 targetPos = startPos + (Vector3)(randomDir * Random.Range(3f, 6f)) + Vector3.down * Random.Range(0f, 2f);
+
+        SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
+        float duration = 0.6f;
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            if (tile == null) yield break;
+
+            float t = elapsed / duration;
+            tile.transform.position = Vector3.Lerp(startPos, targetPos, t);
+            tile.transform.Rotate(0, 0, 360f * Time.deltaTime);
+
+            if (sr != null)
+            {
+                Color c = sr.color;
+                c.a = Mathf.Lerp(1f, 0f, t);
+                sr.color = c;
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (tile != null) Destroy(tile);
     }
 }
