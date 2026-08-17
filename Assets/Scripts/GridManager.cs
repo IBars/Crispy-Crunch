@@ -55,9 +55,6 @@ public class GridManager : MonoBehaviour
         {
             int remainingMoves = Mathf.Max(0, maxMoves - currentMoves);
             movesText.text = "Moves: " + remainingMoves;
-
-            float ratio = (float)remainingMoves / maxMoves;
-            movesText.color = Color.Lerp(Color.black, Color.red, ratio);
         }
     }
 

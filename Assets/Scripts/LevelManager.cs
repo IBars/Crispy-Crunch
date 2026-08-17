@@ -147,10 +147,7 @@ public class LevelManager : MonoBehaviour
             float progress = (float)currentDestroyedCount / targetDestroyCount;
             progress = Mathf.Clamp01(progress);
 
-            Color startColor = new Color(0.8f, 0.8f, 0.8f);
-            Color endColor = new Color(1f, 0.9f, 0f);
-
-            goalText.color = Color.Lerp(startColor, endColor, progress);
+            
         }
     }
 }
