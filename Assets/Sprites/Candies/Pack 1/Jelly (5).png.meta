@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: aa6aa13247206c74bb1b0bd9c0470de6
+guid: 3f6c825b681ddf043b7a9df4eb6d1a09
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -3564965755590060825
-    second: Jelly (2)_0
+      213: 950434775658375136
+    second: Jelly (5)_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,17 +109,30 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Jelly (2)_0
+      name: Jelly (5)_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 298
-        height: 301
+        width: 306
+        height: 275
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7e45f958882b68ec0800000000000000
-      internalID: -3564965755590060825
+      spriteID: 0e7ab41946f903d00800000000000000
+      internalID: 950434775658375136
       vertices: []
       indices: 
       edges: []
@@ -148,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Jelly (2)_0: -3564965755590060825
+      Jelly (5)_0: 950434775658375136
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
