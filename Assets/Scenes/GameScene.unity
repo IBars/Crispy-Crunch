@@ -1328,11 +1328,11 @@ MonoBehaviour:
   width: 6
   height: 6
   tilePrefabs:
-  - {fileID: 8240131221794203223, guid: 90821443dfc60a84e9700e75a9fab3f7, type: 3}
-  - {fileID: 249926861150726540, guid: a318a79e086aad64f94a215d94b5e662, type: 3}
-  - {fileID: 4202024736068342909, guid: a9cd6335d9595794f9f26158ca78ee1c, type: 3}
-  - {fileID: 6242768615411173878, guid: 944a98ddfdb7092488e02a1f87c33aed, type: 3}
-  - {fileID: 3437741888054546881, guid: 1f4ce484f2823604cbc7f2ae37771d7c, type: 3}
+  - {fileID: 8240131221794203223, guid: b4e3a2bd095a9504891555b8601f39f2, type: 3}
+  - {fileID: 249926861150726540, guid: 338fe8e5dcbeac742952ce46ffc1554f, type: 3}
+  - {fileID: 4202024736068342909, guid: 231bc394f241bc34c816107d7cdc51f4, type: 3}
+  - {fileID: 6242768615411173878, guid: 194f2675cd918a84ca0e1b1c4d5b0f85, type: 3}
+  - {fileID: 3437741888054546881, guid: ab20fe6282b1b4e4099beb2cdde525d0, type: 3}
   explosionPrefab: {fileID: 1047996301293844705, guid: 870b1bfec0cdeee45a4c74d8adb025d0, type: 3}
   maxMoves: 5
   movesText: {fileID: 421954641}
