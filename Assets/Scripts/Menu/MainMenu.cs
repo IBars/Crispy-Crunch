@@ -1,15 +1,27 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
 
 public class MainMenu : MonoBehaviour
 {
-    [Header("Dev Tool Ayarı")]
-    public int totalLevelCount = 32; // toplam level sayına göre güncelle
+    [Header("UI")]
+    public TextMeshProUGUI levelText;
+
+    [Header("Dev Tools")]
+    public int totalLevelCount = 100;
+
+    void Start()
+    {
+        int currentLevel = PlayerPrefs.GetInt("CurrentLevel", 1);
+        if (levelText != null)
+            levelText.text = "LEVEL " + currentLevel;
+    }
 
     public void PlayGame()
     {
-        PlayerPrefs.SetInt("CurrentLevel", 1);
-        SceneManager.LoadScene("GameScene"); 
+        if (SoundManager.Instance != null)
+            SoundManager.Instance.PlayClick();
+        SceneManager.LoadScene("GameScene");
     }
 
     public void ResetProgress()

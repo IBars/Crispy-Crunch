@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: b03827e6a97a271438d70761287d0421
+guid: d4fb7ae84aa996047bfc0e0b5bc501fa
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5037950191389348895
-    second: Candy_2_2-removebg-preview_0
+      213: 2889418972109609031
+    second: Gemini_Generated_Image_cztb3zcztb3zcztb-removebg-preview_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Candy_2_2-removebg-preview_0
+      name: Gemini_Generated_Image_cztb3zcztb3zcztb-removebg-preview_0
       rect:
         serializedVersion: 2
-        x: 2
-        y: 11
-        width: 414
-        height: 414
+        x: 79
+        y: 85
+        width: 342
+        height: 342
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1eb602e3efa951ab0800000000000000
-      internalID: -5037950191389348895
+      spriteID: 7481edf0f37491820800000000000000
+      internalID: 2889418972109609031
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Candy_2_2-removebg-preview_0: -5037950191389348895
+      Gemini_Generated_Image_cztb3zcztb3zcztb-removebg-preview_0: 2889418972109609031
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

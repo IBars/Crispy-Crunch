@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MenuMusicManager : MonoBehaviour
 {
@@ -10,7 +11,6 @@ public class MenuMusicManager : MonoBehaviour
 
     private void Awake()
     {
-        // Singleton yapısı: Sahne değişse de müziğin kesilmemesini sağlar
         if (Instance == null)
         {
             Instance = this;
@@ -20,6 +20,28 @@ public class MenuMusicManager : MonoBehaviour
         {
             Destroy(gameObject);
             return;
+        }
+    }
+
+    private void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    private void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name == "GameScene")
+        {
+            StopMenuMusic();
+        }
+        else if (scene.name == "Menu")
+        {
+            PlayMenuMusic();
         }
     }
 
@@ -35,7 +57,7 @@ public class MenuMusicManager : MonoBehaviour
             if (!musicSource.isPlaying)
             {
                 musicSource.clip = menuMusic;
-                musicSource.loop = true; // Şarkı bitince başa sarar
+                musicSource.loop = true;
                 musicSource.Play();
             }
         }
